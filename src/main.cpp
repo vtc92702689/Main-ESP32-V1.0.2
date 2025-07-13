@@ -271,7 +271,8 @@ const int pinPWM = 3;
 
 //KHAI BÁO THÔNG SỐ TRƯƠNG TRÌNH
 
-
+/* Ví dụ: int thoiGianNhaDao = 200;
+          int soDuMuiDauVao = 10;*/
 
 
 //TRƯƠNG TRÌNH NGƯỜI DÙNG LẬP TRÌNH
@@ -390,11 +391,21 @@ void testOutput(){
 
 
 void tinhToanCaiDat(){
+  /* Ví dụ:
+  soXungCanChay = soXungMotor * soVongCuon;
+  thoiGianDaoPWM = (1000000*30)/(tocDoQuay*soXungMotor);
+  digitalWrite(pinDir,chieuQuayDongCo);
+  */
 
 }
 
 void loadSetup(){
-
+  /* Ví dụ:
+  cheDoHoatDong = jsonDoc["main"]["main1"]["children"]["CD1"]["configuredValue"];
+  thoiGianNhaDao = jsonDoc["main"]["main1"]["children"]["CD2"]["configuredValue"];
+  soDuMuiDauVao = jsonDoc["main"]["main1"]["children"]["CD3"]["configuredValue"];
+  soDuMuiDauRa = jsonDoc["main"]["main1"]["children"]["CD4"]["configuredValue"];
+  */
 
 }
 
