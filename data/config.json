@@ -1,28 +1,28 @@
 {
   "main": {
     "main1": {
-      "text": "CAI DAT",
+      "text": "CÀI ĐẶT",
       "key": "CD",
       "children": {
         "CD1": {
           "key": "CD1",
-          "text": "Che do HD",
-          "defaultValue": 1,
-          "configuredValue": 1,
+          "text": "Đ.Trễ xoay",
+          "defaultValue": 150,
+          "configuredValue": 150,
           "minValue": 1,
-          "maxValue": 2,
+          "maxValue": 10000,
           "accessAllowed": true,
           "editAllowed": true,
-          "explanationMode": true,
-          "explanationDetails": "SenSor & Step,Step,Sensor"
+          "explanationMode": false,
+          "explanationDetails": ""
         },
         "CD2": {
           "key": "CD2",
-          "text": "So vong cuon",
-          "defaultValue": 2,
-          "configuredValue": 2,
+          "text": "Đ.Trễ gạt chắn",
+          "defaultValue": 150,
+          "configuredValue": 150,
           "minValue": 1,
-          "maxValue": 4,
+          "maxValue": 10000,
           "accessAllowed": true,
           "editAllowed": true,
           "explanationMode": false,
@@ -30,11 +30,11 @@
         },
         "CD3": {
           "key": "CD3",
-          "text": "Chieu Quay",
-          "defaultValue": 1,
-          "configuredValue": 1,
-          "minValue": 0,
-          "maxValue": 1,
+          "text": "Đ.Trễ trả ngược",
+          "defaultValue": 200,
+          "configuredValue": 200,
+          "minValue": 1,
+          "maxValue": 10000,
           "accessAllowed": true,
           "editAllowed": true,
           "explanationMode": false,
@@ -42,11 +42,11 @@
         },
         "CD4": {
           "key": "CD4",
-          "text": "Toc Do",
-          "defaultValue": 280,
-          "configuredValue": 280,
-          "minValue": 100,
-          "maxValue": 2000,
+          "text": "Đ.Trễ kẹp",
+          "defaultValue": 500,
+          "configuredValue": 500,
+          "minValue": 1,
+          "maxValue": 10000,
           "accessAllowed": true,
           "editAllowed": true,
           "explanationMode": false,
@@ -54,33 +54,21 @@
         },
         "CD5": {
           "key": "CD5",
-          "text": "So Xung Dong Co",
-          "defaultValue": 200,
-          "configuredValue": 200,
-          "minValue": 50,
-          "maxValue": 500,
-          "accessAllowed": true,
-          "editAllowed": true,
-          "explanationMode": false,
-          "explanationDetails": ""
-        },
-        "CD6": {
-          "key": "CD6",
-          "text": "Thoi Gian Giu Role",
-          "defaultValue": 150,
-          "configuredValue": 150,
-          "minValue": 10,
-          "maxValue": 5000,
+          "text": "Đ.Trễ nhả kẹp",
+          "defaultValue": 300,
+          "configuredValue": 300,
+          "minValue": 1,
+          "maxValue": 10000,
           "accessAllowed": true,
           "editAllowed": true,
           "explanationMode": false,
           "explanationDetails": ""
         }
       },
-      "totalChildren": 6
+      "totalChildren": 5
     },
     "main2": {
-      "text": "CHUC NANG",
+      "text": "CHỨC NĂNG",
       "key": "CN",
       "children": {
         "CN1": {
@@ -147,23 +135,47 @@
       "totalChildren": 5
     },
     "main3": {
-      "text": "GIOI THIEU",
+      "text": "GIỚI THIỆU",
       "key": "GT",
       "children": {
         "GT1": {
           "key": "GT1",
-          "text": "DKien Design",
-          "defaultValue": 1,
-          "configuredValue": 1,
+          "text": "Vertion Code",
+          "defaultValue": 0,
+          "configuredValue": "v1.0.0-v2",
+          "minValue": 0,
+          "maxValue": 0,
+          "accessAllowed": true,
+          "editAllowed": false,
+          "explanationMode": false,
+          "explanationDetails": ""
+        },
+        "GT2": {
+          "key": "GT2",
+          "text": "Board Model",
+          "defaultValue": 0,
+          "configuredValue": "v.6x6-v1.2",
           "minValue": 1,
           "maxValue": 1,
           "accessAllowed": true,
-          "editAllowed": true,
+          "editAllowed": false,
+          "explanationMode": false,
+          "explanationDetails": ""
+        },
+        "GT3": {
+          "key": "GT3",
+          "text": "DKiên Design",
+          "defaultValue": 0,
+          "configuredValue": 0,
+          "minValue": 0,
+          "maxValue": 0,
+          "accessAllowed": true,
+          "editAllowed": false,
           "explanationMode": false,
           "explanationDetails": ""
         }
       },
-      "totalChildren": 1
+      "totalChildren": 3
     }
   }
 }

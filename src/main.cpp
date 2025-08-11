@@ -17,12 +17,12 @@ const char* jsonString = R"()";
 void tinhToanCaiDat();
 void loadSetup();
 
-OneButton btnMenu(34, false,false);
-OneButton btnSet(35, false,false);
-OneButton btnUp(36, false,false);
-OneButton btnDown(39, false,false);
-OneButton btnRun(32,false,false);
-OneButton btnEstop(33,false,false);
+OneButton btnMenu(0, true,false);
+OneButton btnSet(2, false,false);
+OneButton btnUp(12, false,false);
+OneButton btnDown(15, false,false);
+OneButton btnRun(23,false,false);
+OneButton btnEstop(13,false,false);
 
 
 void btnMenuClick() {
@@ -251,23 +251,30 @@ void btnDownDuringLongPress() {
 
 //KHAI BÁO CHÂN IO Ở ĐÂY
 
-const int sensorCilinderXp1 = 17;
-const int sensorCilinderXp2 = 16;
+const int SensorIn1 = 36;
+const int SensorIn2 = 39;
+const int SensorIn3 = 34;
+const int SensorIn4 = 35;
+const int SensorIn5 = 32;
+const int SensorIn6 = 33;
 
-const int sensorCilinderYp1 = 4;
-const int sensorCilinderYp2 = 0;
+const int SensorIn7 = 25;
+const int SensorIn8 = 26;
 
-const int sensorOrigin = 2;
-const int sensorFoot = 15;
-const int sensorActive = 23;
+const int SensorIn9 = 23;
+const int SensorIn10 = 13;
 
-const int outRelayX = 25;
-const int outRelayY = 26;
-const int outRelayFoot = 27;
-const int outRelayRun = 14;
 
-const int pinDir = 1;
-const int pinPWM = 3;
+const int Out1 = 4;
+const int Out2 = 16;
+const int Out3 = 17;
+const int Out4 = 5;
+const int Out5 = 18;
+const int Out6 = 19;
+
+const int Out7 = 27;
+const int Out8 = 14;
+
 
 //KHAI BÁO THÔNG SỐ TRƯƠNG TRÌNH
 
@@ -303,87 +310,157 @@ void testMode(){
 
 void testInput(){
   static bool trangthaiCuoiIO1;
-  if (digitalRead(sensorCilinderXp1)!= trangthaiCuoiIO1){
-    trangthaiCuoiIO1 = digitalRead(sensorCilinderXp1);
-    showText("IO 17" , String(trangthaiCuoiIO1).c_str());
+  if (digitalRead(SensorIn1)!= trangthaiCuoiIO1){
+    trangthaiCuoiIO1 = digitalRead(SensorIn1);
+    showText("IO 36" , String(trangthaiCuoiIO1).c_str());
   }
   static bool trangthaiCuoiIO2;
-  if (digitalRead(sensorCilinderXp2)!= trangthaiCuoiIO2){
-    trangthaiCuoiIO2 = digitalRead(sensorCilinderXp2);
-    showText("IO 16" , String(trangthaiCuoiIO2).c_str());
+  if (digitalRead(SensorIn2)!= trangthaiCuoiIO2){
+    trangthaiCuoiIO2 = digitalRead(SensorIn2);
+    showText("IO 39" , String(trangthaiCuoiIO2).c_str());
   }
   static bool trangthaiCuoiIO3;
-  if (digitalRead(sensorCilinderYp1)!= trangthaiCuoiIO3){
-    trangthaiCuoiIO3 = digitalRead(sensorCilinderYp1);
-    showText("IO 04" , String(trangthaiCuoiIO3).c_str());
+  if (digitalRead(SensorIn3)!= trangthaiCuoiIO3){
+    trangthaiCuoiIO3 = digitalRead(SensorIn3);
+    showText("IO 34" , String(trangthaiCuoiIO3).c_str());
   }
   static bool trangthaiCuoiIO4;
-  if (digitalRead(sensorCilinderYp2)!= trangthaiCuoiIO4){
-    trangthaiCuoiIO4 = digitalRead(sensorCilinderYp2);
-    showText("IO 00" , String(trangthaiCuoiIO4).c_str());
+  if (digitalRead(SensorIn4)!= trangthaiCuoiIO4){
+    trangthaiCuoiIO4 = digitalRead(SensorIn4);
+    showText("IO 35" , String(trangthaiCuoiIO4).c_str());
   }
   static bool trangthaiCuoiIO5;
-  if (digitalRead(sensorOrigin)!= trangthaiCuoiIO5){
-    trangthaiCuoiIO5 = digitalRead(sensorOrigin);
-    showText("IO 02" , String(trangthaiCuoiIO5).c_str());
+  if (digitalRead(SensorIn5)!= trangthaiCuoiIO5){
+    trangthaiCuoiIO5 = digitalRead(SensorIn5);
+    showText("IO 32" , String(trangthaiCuoiIO5).c_str());
   }
   static bool trangthaiCuoiIO6;
-  if (digitalRead(sensorFoot)!= trangthaiCuoiIO6){
-    trangthaiCuoiIO6 = digitalRead(sensorFoot);
-    showText("IO 15" , String(trangthaiCuoiIO6).c_str());
+  if (digitalRead(SensorIn6)!= trangthaiCuoiIO6){
+    trangthaiCuoiIO6 = digitalRead(SensorIn6);
+    showText("IO 33" , String(trangthaiCuoiIO6).c_str());
+  }
+  static bool trangthaiCuoiIO7;
+  if (digitalRead(SensorIn7)!= trangthaiCuoiIO7){
+    trangthaiCuoiIO7 = digitalRead(SensorIn7);
+    showText("IO 25" , String(trangthaiCuoiIO7).c_str());
+  }
+  static bool trangthaiCuoiIO8;
+  if (digitalRead(SensorIn8)!= trangthaiCuoiIO8){
+    trangthaiCuoiIO8 = digitalRead(SensorIn8);
+    showText("IO 26" , String(trangthaiCuoiIO8).c_str());
+  }
+  static bool trangthaiCuoiIO9 = true;
+  if (digitalRead(SensorIn9)!= trangthaiCuoiIO9){
+    trangthaiCuoiIO9 = digitalRead(SensorIn9);
+    showText("IO 23" , String(trangthaiCuoiIO9).c_str());
+  }
+  static bool trangthaiCuoiIO10 = true;
+  if (digitalRead(SensorIn10)!= trangthaiCuoiIO10){
+    trangthaiCuoiIO10 = digitalRead(SensorIn10);
+    showText("IO 13" , String(trangthaiCuoiIO10).c_str());
   }
 }
+
 void testOutput(){
   switch (testOutputStep){
     case 0:
       if (hienThiTestOutput){
-        maxTestOutputStep = 3;
-        bool tinHieuHienTai = digitalRead(outRelayX);
-        showText("IO 25", String(tinHieuHienTai).c_str());
+        maxTestOutputStep = 7;
+        bool tinHieuHienTai = digitalRead(Out1);
+        showText("IO 4", String(tinHieuHienTai).c_str());
         hienThiTestOutput = false;
       } else if (daoTinHieuOutput){
-        bool tinHieuHienTai = digitalRead(outRelayX);
-        digitalWrite(outRelayX,!tinHieuHienTai);
+        bool tinHieuHienTai = digitalRead(Out1);
+        digitalWrite(Out1,!tinHieuHienTai);
         hienThiTestOutput = true;
         daoTinHieuOutput = false;
       }
       break;
     case 1:
       if (hienThiTestOutput){
-        bool tinHieuHienTai = digitalRead(outRelayY);
-        showText("IO 26", String(tinHieuHienTai).c_str());
+        bool tinHieuHienTai = digitalRead(Out2);
+        showText("IO 16", String(tinHieuHienTai).c_str());
         hienThiTestOutput = false;
       } else if (daoTinHieuOutput){
-        bool tinHieuHienTai = digitalRead(outRelayY);
-        digitalWrite(outRelayY,!tinHieuHienTai);
+        bool tinHieuHienTai = digitalRead(Out2);
+        digitalWrite(Out2,!tinHieuHienTai);
         hienThiTestOutput = true;
         daoTinHieuOutput = false;
       }
       break;
     case 2:
       if (hienThiTestOutput){
-        bool tinHieuHienTai = digitalRead(outRelayFoot);
-        showText("IO 27", String(tinHieuHienTai).c_str());
+        bool tinHieuHienTai = digitalRead(Out3);
+        showText("IO 17", String(tinHieuHienTai).c_str());
         hienThiTestOutput = false;
       } else if (daoTinHieuOutput){
-        bool tinHieuHienTai = digitalRead(outRelayFoot);
-        digitalWrite(outRelayFoot,!tinHieuHienTai);
+        bool tinHieuHienTai = digitalRead(Out3);
+        digitalWrite(Out3,!tinHieuHienTai);
         hienThiTestOutput = true;
         daoTinHieuOutput = false;
       }
       break;
     case 3:
       if (hienThiTestOutput){
-        bool tinHieuHienTai = digitalRead(outRelayRun);
-        showText("IO 14", String(tinHieuHienTai).c_str());
+        bool tinHieuHienTai = digitalRead(Out4);
+        showText("IO 5", String(tinHieuHienTai).c_str());
         hienThiTestOutput = false;
       } else if (daoTinHieuOutput){
-        bool tinHieuHienTai = digitalRead(outRelayRun);
-        digitalWrite(outRelayRun,!tinHieuHienTai);
+        bool tinHieuHienTai = digitalRead(Out4);
+        digitalWrite(Out4,!tinHieuHienTai);
         hienThiTestOutput = true;
         daoTinHieuOutput = false;
       }
       break;
+    case 4:
+      if (hienThiTestOutput){
+        bool tinHieuHienTai = digitalRead(Out5);
+        showText("IO 18", String(tinHieuHienTai).c_str());
+        hienThiTestOutput = false;
+      } else if (daoTinHieuOutput){
+        bool tinHieuHienTai = digitalRead(Out5);
+        digitalWrite(Out5,!tinHieuHienTai);
+        hienThiTestOutput = true;
+        daoTinHieuOutput = false;
+      }
+      break;
+      case 5:
+      if (hienThiTestOutput){
+        bool tinHieuHienTai = digitalRead(Out6);
+        showText("IO 19", String(tinHieuHienTai).c_str());
+        hienThiTestOutput = false;
+      } else if (daoTinHieuOutput){
+        bool tinHieuHienTai = digitalRead(Out6);
+        digitalWrite(Out6,!tinHieuHienTai);
+        hienThiTestOutput = true;
+        daoTinHieuOutput = false;
+      }
+      break;
+      case 6:
+      if (hienThiTestOutput){
+        bool tinHieuHienTai = digitalRead(Out7);
+        showText("IO 27", String(tinHieuHienTai).c_str());
+        hienThiTestOutput = false;
+      } else if (daoTinHieuOutput){
+        bool tinHieuHienTai = digitalRead(Out7);
+        digitalWrite(Out7,!tinHieuHienTai);
+        hienThiTestOutput = true;
+        daoTinHieuOutput = false;
+      }
+      break;
+      case 7:
+      if (hienThiTestOutput){
+        bool tinHieuHienTai = digitalRead(Out8);
+        showText("IO 14", String(tinHieuHienTai).c_str());
+        hienThiTestOutput = false;
+      } else if (daoTinHieuOutput){
+        bool tinHieuHienTai = digitalRead(Out8);
+        digitalWrite(Out8,!tinHieuHienTai);
+        hienThiTestOutput = true;
+        daoTinHieuOutput = false;
+      }
+      break;
+
     default:
       break;
   }
@@ -410,6 +487,7 @@ void loadSetup(){
 }
 
 void khoiDong(){
+  delay(500);
   displayScreen = "index";
   showText("HELLO","Xin Chào");
   mainStep = 0;
@@ -469,20 +547,27 @@ void setup() {
   btnUp.setPressMs(btnSetPressMill);
   btnDown.setPressMs(btnSetPressMill);
 
-  pinMode(sensorCilinderXp1,INPUT);
-  pinMode(sensorCilinderXp2,INPUT);
-  pinMode(sensorCilinderYp1,INPUT);
-  pinMode(sensorCilinderYp2,INPUT);
-  pinMode(sensorActive,INPUT);
-  pinMode(sensorFoot,INPUT);
-  pinMode(sensorOrigin,INPUT);
+  pinMode(SensorIn1,INPUT);
+  pinMode(SensorIn2,INPUT);
+  pinMode(SensorIn3,INPUT);
+  pinMode(SensorIn4,INPUT);
+  pinMode(SensorIn5,INPUT);
+  pinMode(SensorIn6,INPUT);
 
-  pinMode(pinDir,OUTPUT);
-  pinMode(pinPWM,OUTPUT);
-  pinMode(outRelayX,OUTPUT);
-  pinMode(outRelayY,OUTPUT);
-  pinMode(outRelayFoot,OUTPUT);
-  pinMode(outRelayRun,OUTPUT);
+  pinMode(SensorIn7,INPUT);
+  pinMode(SensorIn8,INPUT);
+  pinMode(SensorIn9,INPUT);
+  pinMode(SensorIn10,INPUT);
+
+  pinMode(Out1,OUTPUT);
+  pinMode(Out2,OUTPUT);
+  pinMode(Out3,OUTPUT);
+  pinMode(Out4,OUTPUT);
+  pinMode(Out5,OUTPUT);
+  pinMode(Out6,OUTPUT);
+
+  pinMode(Out7,OUTPUT);
+  pinMode(Out8,OUTPUT);
 
 
   if (!LittleFS.begin()) {
