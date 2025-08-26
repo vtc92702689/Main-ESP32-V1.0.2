@@ -4,6 +4,7 @@
 #include <U8g2lib.h> // Bao gồm thư viện U8g2 để điều khiển màn hình OLED
 #include <ArduinoJson.h> // Bao gồm thư viện ArduinoJson để làm việc với JSON
 #include <LittleFS.h>
+#include <map>
 
 // Khai báo các hàm trong func.cpp
 bool isNumeric(const char* str); 
@@ -11,6 +12,8 @@ bool isNumeric(const char* str);
 
 void splitString(const String& input, String* output, int maxParts);
 // Hàm tách chuỗi theo dấu phẩy thành các phần nhỏ hơn
+
+bool Wait(unsigned long waitTime);
 
 bool WaitMillis(unsigned long thoiDiemCuoi, unsigned long waitTime);
 // Hàm chờ trong khoảng thời gian tính bằng milliseconds

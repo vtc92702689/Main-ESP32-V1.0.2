@@ -385,3 +385,18 @@ void reSet() {
   }
   writeFile(jsonDoc, "/config.json"); // Ghi lại tệp cấu hình với các giá trị mặc định
 }
+
+bool Wait(unsigned long waitTime) {
+  void* callerID = __builtin_return_address(0);  // tạo ID theo vị trí gọi
+  static std::map<void*, unsigned long> timers;
+
+  if (timers.find(callerID) == timers.end())
+    timers[callerID] = millis();
+
+  if (millis() - timers[callerID] > waitTime) {
+    timers.erase(callerID); // reset để có thể lặp lại
+    return true;
+  }
+
+  return false;
+}
