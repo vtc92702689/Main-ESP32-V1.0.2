@@ -16,6 +16,7 @@ StaticJsonDocument<200> jsonDoc;
 const char* jsonString = R"()";
 void tinhToanCaiDat();
 void loadSetup();
+void veGoc();
 
 OneButton btnMenu(0, true,false);
 OneButton btnSet(2, false,false);
@@ -43,7 +44,8 @@ void btnMenuClick() {
   } else if (displayScreen == "MENU" && mainStep == 0){
     displayScreen= "index";
     trangThaiHoatDong = 1;
-    showText("HELLO", "ESP32-OPTION");
+    veGoc();
+    //showText("HELLO", "ESP32-OPTION");
   } else if (displayScreen == "testIO"){
     loadJsonSettings();
     displayScreen = "ScreenCD";
@@ -57,7 +59,9 @@ void btnMenuClick() {
     displayScreen = "ScreenCD";
     trangThaiHoatDong = 0;
   } else if (displayScreen == "OTA"){
-
+    loadJsonSettings();
+    displayScreen = "ScreenCD";
+    trangThaiHoatDong = 0;
   }
 }
 
@@ -107,7 +111,7 @@ void btnSetClick() {
         displayScreen = "ScreenEdit";
       }
     }
-  } else if (displayScreen == "ScreenEdit")  {
+  } else if (displayScreen == "ScreenEdit" && editAllowed)  {
     if (keyStr == "CD"){
       if (columnIndex - 1 < 0){
         columnIndex = maxLength-1;
@@ -486,13 +490,23 @@ void loadSetup(){
 
 }
 
+void veGoc(){
+  // trangThaiHoatDong = 198 , 199;
+  showText("ORIGIN", "Đang về gốc");
+  trangThaiHoatDong = 199;
+}
+
 void khoiDong(){
-  delay(500);
+  delay(200);
   displayScreen = "index";
   showText("HELLO","Xin Chào");
   mainStep = 0;
   trangThaiHoatDong = 0;
+  tinhToanCaiDat();
+  delay(200);
   loadSetup();
+  delay(100);
+  veGoc();
 }
 
 void mainRun(){
@@ -616,6 +630,15 @@ void loop() {
   case 2:
     mainRun();
     break;
+  case 198:     // Về Gốc 1
+    trangThaiHoatDong = 1;
+    break;
+  case 199:     // Về Gốc 2
+    if(Wait(2000)){
+      trangThaiHoatDong = 1;
+      showText("READY", "Đang Hoạt Động");
+    }
+    break;
   case 200:        //ESTOP dừng khẩn cấp
     btnMenu.tick();
     break;
@@ -637,6 +660,7 @@ void loop() {
     testOutput();
     break;
   case 204:
+    btnMenu.tick();
     handleOTA(); // Xử lý OTA khi điều kiện đúng
     break;  
   default:
