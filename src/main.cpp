@@ -502,9 +502,9 @@ void khoiDong(){
   showText("HELLO","Xin Chào");
   mainStep = 0;
   trangThaiHoatDong = 0;
-  tinhToanCaiDat();
-  delay(200);
   loadSetup();
+  delay(200);
+  tinhToanCaiDat();
   delay(100);
   veGoc();
 }
