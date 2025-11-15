@@ -14,6 +14,7 @@
 StaticJsonDocument<200> jsonDoc;
 
 const char* jsonString = R"()";
+bool isChanged = false;
 void tinhToanCaiDat();
 void loadSetup();
 void veGoc();
@@ -29,7 +30,7 @@ OneButton btnEstop(13,false,false);
 void btnMenuClick() {
   //Serial.println("Button Clicked (nhấn nhả)");
   if (displayScreen == "ScreenCD") {
-    if (keyStr == "CD") {
+    if (keyStr == "CD" && isChanged) {
       writeFile(jsonDoc,"/config.json");
     }
     showList(menuIndex);  // Hiển thị danh sách menu hiện tại
@@ -130,6 +131,7 @@ void btnSetLongPressStart() {
   if (displayScreen == "ScreenEdit"){
     if (keyStr == "CD"){
       jsonDoc["main"]["main" + String(menuIndex)]["children"][setupCodeStr]["configuredValue"] = currentValue;
+      isChanged = true;
       log("Đã lưu giá trị:" + String(currentValue) + " vào thẻ " + keyStr + "/" + setupCodeStr);
       loadJsonSettings();
       loadSetup();

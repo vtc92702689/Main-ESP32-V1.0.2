@@ -59,6 +59,7 @@ void readConfigFile();
 
 void reSet();
 // Hàm đặt lại giá trị cấu hình về mặc định và ghi lại tệp JSON với các giá trị này
+void xuatXungPWM(unsigned long thoiGianDao,int PinPWM);
 
 // Khai báo các biến toàn cục
 extern int btnSetDebounceMill; // Thời gian chống nhiễu cho nút bấm, tránh ghi nhận nhiều lần nhấn do nhiễu
@@ -71,6 +72,7 @@ extern int minValue; // Giá trị nhỏ nhất có thể, dùng trong các mụ
 extern int maxLength; // Độ dài tối đa của chuỗi giá trị, dùng để giới hạn đầu vào
 extern int columnIndex; // Chỉ số cột hiện tại để chỉnh sửa giá trị, thường dùng khi nhập liệu số
 extern int currentValue; // Giá trị hiện tại của mục cài đặt, lưu trữ giá trị đang được chỉnh sửa
+extern int soXungDaChay = 0;
 
 extern byte trangThaiHoatDong; // Trạng thái hoạt động của chương trình, dùng để điều hướng giữa các trạng thái khác nhau
 extern byte mainStep; // Bước chính trong quy trình hoạt động của chương trình

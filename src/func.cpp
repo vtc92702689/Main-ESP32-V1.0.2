@@ -11,6 +11,7 @@ int minValue = 0;            // Giá trị nhỏ nhất có thể, dùng trong c
 int maxLength = 0;           // Độ dài tối đa của chuỗi giá trị, dùng để giới hạn đầu vào
 int columnIndex = 0;         // Chỉ số cột hiện tại để chỉnh sửa giá trị, thường dùng khi nhập liệu số
 int currentValue;            // Giá trị hiện tại của mục cài đặt, lưu trữ giá trị đang được chỉnh sửa
+int soXungDaChay = 0;
 
 byte trangThaiHoatDong = 0;  // Trạng thái hoạt động của chương trình, dùng để điều hướng giữa các trạng thái khác nhau
 byte mainStep = 0;           // Bước chính trong quy trình hoạt động của chương trình
@@ -38,6 +39,7 @@ String textExplanationMode;     // Chuỗi mô tả chế độ giải thích, c
 String textStr;                 // Chuỗi mô tả, chứa thông tin văn bản hiển thị trên màn hình
 String keyStr;                  // Chuỗi khóa, dùng để lưu trữ khóa của mục cài đặt trong tài liệu JSON
 String ListExp[10];             // Mảng chứa các phần chức năng giải thích thông số, chứa các mục giải thích cho mục cài đặt
+
 
 
 // Hàm kiểm tra một chuỗi có phải là số hay không
@@ -398,4 +400,17 @@ bool Wait(unsigned long waitTime) {
     return true;
   }
   return false;
+}
+void xuatXungPWM(unsigned long thoiGianDao,int PinPWM) {
+  static bool trangThaiPWM = false;
+  static unsigned long thoiDiemCuoiPWM = 0;
+  if (WaitMicros(thoiDiemCuoiPWM, thoiGianDao)) {
+    trangThaiPWM = !trangThaiPWM;
+    digitalWrite(pinPWM, trangThaiPWM);
+    thoiDiemCuoiPWM = micros();
+
+    if (trangThaiPWM) {
+      soXungDaChay++; // chỉ đếm khi vừa lên HIGH
+    }
+  }
 }
