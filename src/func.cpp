@@ -12,6 +12,7 @@ int maxLength = 0;           // Độ dài tối đa của chuỗi giá trị, d
 int columnIndex = 0;         // Chỉ số cột hiện tại để chỉnh sửa giá trị, thường dùng khi nhập liệu số
 int currentValue;            // Giá trị hiện tại của mục cài đặt, lưu trữ giá trị đang được chỉnh sửa
 int soXungDaChay = 0;
+int divisorValue = 0; // Biến lưu hệ số chia để hiển thị thập phân
 
 byte trangThaiHoatDong = 0;  // Trạng thái hoạt động của chương trình, dùng để điều hướng giữa các trạng thái khác nhau
 byte mainStep = 0;           // Bước chính trong quy trình hoạt động của chương trình
@@ -230,14 +231,22 @@ void showSetup(const char* setUpCode, const char* value, const char* text) {
   }
 
   int startX = 128 - 10; // Bắt đầu từ vị trí rìa phải
+  int dotPosition = -1;
+  if (divisorValue >= 10) {
+    dotPosition = log10(divisorValue); // Vị trí dấu chấm từ phải sang trái
+  }
 
   for (int i = 0; i < valueLength; i++) {
     char temp[2] = {value[valueLength - 1 - i], '\0'}; // Lấy ký tự theo thứ tự ngược lại
-    u8g2.drawStr(startX - (i * 10), 18, temp); // Vẽ ký tự lùi về bên trái
+    int x = startX - (i * 10);
+    u8g2.drawStr(x, 18, temp); // Vẽ ký tự lùi về bên trái
+
+    if (dotPosition == i && i != valueLength - 1) {
+      u8g2.drawStr(x - 4, 18, "."); // Vẽ dấu "." phân cách thập phân
+    }
   }
 
   u8g2.drawLine(0, 23, 128, 23); // Vẽ một đường ngang trên màn hình
-
   wrapText(text, 0, 42, 18, 128); // Hiển thị nội dung văn bản xuống dòng nếu dài quá
   u8g2.sendBuffer(); // Gửi nội dung đệm ra màn hình
 }
@@ -266,23 +275,33 @@ void showEdit(int columnIndex) {
 
   int startX = 128 - 10; // Bắt đầu từ vị trí rìa phải
 
+  int dotPosition = -1;
+  if (divisorValue >= 10) {
+    dotPosition = log10(divisorValue); // Vị trí dấu chấm từ phải sang trái
+  }
+
   for (int i = 0; i < maxLength; i++) {
-    char temp[2] = {'\0', '\0'}; // Khởi tạo chuỗi tạm với giá trị mặc định
+    char temp[2] = {' ', '\0'}; // Khởi tạo chuỗi tạm với giá trị mặc định
 
     if (i < valueLength) {
       temp[0] = valueChr[valueLength - 1 - i]; // Lấy ký tự theo thứ tự ngược lại
-    } else {
-      temp[0] = ' '; // Nếu không có giá trị thì mặc định là khoảng trắng
     }
+
+    int x = startX - (i * 10); // Tính vị trí vẽ ký tự
 
     if (i == columnIndex) {
       u8g2.setDrawColor(1); // Đặt màu nền
-      u8g2.drawBox(startX - (i * 10), 5, 9, 15); // Vẽ ô vuông làm nền
+      u8g2.drawBox(x, 5, 9, 15); // Vẽ ô vuông làm nền
       u8g2.setDrawColor(0); // Đặt màu chữ
-      u8g2.drawStr(startX - (i * 10), 18, temp); // Vẽ ký tự
+      u8g2.drawStr(x, 18, temp); // Vẽ ký tự
       u8g2.setDrawColor(1); // Khôi phục màu nền
     } else {
-      u8g2.drawStr(startX - (i * 10), 18, temp); // Vẽ ký tự
+      u8g2.drawStr(x, 18, temp); // Vẽ ký tự
+    }
+
+    // Vẽ dấu "." nếu cần
+    if (dotPosition == i && i != valueLength - 1) {
+      u8g2.drawStr(x - 4, 18, "."); // Vẽ dấu "." phân cách thập phân
     }
   }
 
@@ -317,7 +336,14 @@ void loadJsonSettings() {
     minValue = jsonDoc["main"]["main" + String(menuIndex)]["children"][setupCodeStr]["minValue"];
     explanationMode = jsonDoc["main"]["main" + String(menuIndex)]["children"][setupCodeStr]["explanationMode"];
     editAllowed = jsonDoc["main"]["main" + String(menuIndex)]["children"][setupCodeStr]["editAllowed"];
-    
+
+    // Đọc divisor từ JSON
+    if (jsonDoc["main"]["main" + String(menuIndex)]["children"][setupCodeStr]["divisor"].is<int>()) {
+      divisorValue = jsonDoc["main"]["main" + String(menuIndex)]["children"][setupCodeStr]["divisor"];
+    } else {
+      divisorValue = 0; // Mặc định nếu không có hoặc không hợp lệ
+    }
+
     // Kiểm tra chế độ giải thích
     if (explanationMode) {
       String listStr = jsonDoc["main"]["main" + String(menuIndex)]["children"][setupCodeStr]["explanationDetails"];

@@ -248,6 +248,7 @@ void btnDownClick() {
 // Hàm callback khi bắt đầu nhấn giữ nút
 void btnDownLongPressStart() {
   //Serial.println("Button Long Press Started (btnDown)");
+  veGoc();
 }
 
 // Hàm callback khi nút đang được giữ
@@ -626,6 +627,7 @@ void loop() {
     break;
   case 1:
     btnMenu.tick();
+    btnDown.tick();
     
     
     break;

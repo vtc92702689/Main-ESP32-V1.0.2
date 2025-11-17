@@ -72,6 +72,7 @@ extern int minValue; // Giá trị nhỏ nhất có thể, dùng trong các mụ
 extern int maxLength; // Độ dài tối đa của chuỗi giá trị, dùng để giới hạn đầu vào
 extern int columnIndex; // Chỉ số cột hiện tại để chỉnh sửa giá trị, thường dùng khi nhập liệu số
 extern int currentValue; // Giá trị hiện tại của mục cài đặt, lưu trữ giá trị đang được chỉnh sửa
+extern int divisorValue; //hệ số chia
 extern int soXungDaChay;
 extern int pinPWM;
 
