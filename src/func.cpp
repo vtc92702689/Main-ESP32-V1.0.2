@@ -414,9 +414,11 @@ void reSet() {
   writeFile(jsonDoc, "/config.json"); // Ghi lại tệp cấu hình với các giá trị mặc định
 }
 
+// Đưa timers ra ngoài để chia sẻ giữa các hàm Wait & reset Wait
+static std::map<void*, unsigned long> timers;
+
 bool Wait(unsigned long waitTime) {
   void* callerID = __builtin_return_address(0);  // tạo ID theo vị trí gọi
-  static std::map<void*, unsigned long> timers;
 
   if (timers.find(callerID) == timers.end())
     timers[callerID] = millis();
@@ -426,6 +428,10 @@ bool Wait(unsigned long waitTime) {
     return true;
   }
   return false;
+}
+void resetWait() {
+  void* callerID = __builtin_return_address(0);
+  timers.erase(callerID);
 }
 void xuatXungPWM(unsigned long thoiGianDao,int PinPWM) {
   static bool trangThaiPWM = false;

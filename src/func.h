@@ -15,6 +15,8 @@ void splitString(const String& input, String* output, int maxParts);
 
 bool Wait(unsigned long waitTime);
 
+void resetWait();
+
 bool WaitMillis(unsigned long thoiDiemCuoi, unsigned long waitTime);
 // Hàm chờ trong khoảng thời gian tính bằng milliseconds
 
