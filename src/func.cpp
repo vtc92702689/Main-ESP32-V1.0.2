@@ -205,13 +205,31 @@ void showProgress(int parameter1, int parameter2, int parameter3) {
   u8g2.sendBuffer(); // Gửi dữ liệu từ bộ đệm lên màn hình
 }
 
+// Hàm tính số chữ số thập phân dựa trên divisor một cách an toàn
+// 10 -> 1, 100 -> 2, 1000 -> 3; nếu không phải 10^n, dùng số chữ số của divisor
+int calcDecimalDigits(int divisor) {
+  if (divisor < 10) return 0;
+  int d = divisor;
+  int zeros = 0;
+  while (d >= 10 && (d % 10 == 0)) { // đếm số 0 ở cuối nếu là 10^n
+    zeros++;
+    d /= 10;
+  }
+  if (zeros > 0) return zeros;
+
+  // fallback: số chữ số của divisor (ví dụ 25 -> 2)
+  int len = 0;
+  while (divisor > 0) { len++; divisor /= 10; }
+  return len;
+}
+
 
 // Hàm hiển thị cài đặt
 void showSetup(const char* setUpCode, const char* value, const char* text) {
   u8g2.clearBuffer(); // Xóa bộ nhớ đệm của màn hình để vẽ mới
   u8g2.setFont(u8g2_font_crox3hb_tf); // Thiết lập font chữ đậm
 
-  char tempSetUpCode[64]; // Tạo chuỗi tạm chứa mã cài đặt và dấu ";"
+  char tempSetUpCode[64]; // Tạo chuỗi tạm chứa mã cài đặt và dấu ":"
   snprintf(tempSetUpCode, sizeof(tempSetUpCode), "%s:", setUpCode); // Nối mã cài đặt với dấu ":"
   u8g2.drawStr(0, 18, tempSetUpCode); // Hiển thị mã cài đặt
 
@@ -231,9 +249,16 @@ void showSetup(const char* setUpCode, const char* value, const char* text) {
   }
 
   int startX = 128 - 10; // Bắt đầu từ vị trí rìa phải
+
+  // Tính vị trí dấu chấm: vẽ từ phải sang trái, nên cần số chữ số thập phân rồi quy đổi sang chỉ số i
   int dotPosition = -1;
-  if (divisorValue >= 10) {
-    dotPosition = log10(divisorValue); // Vị trí dấu chấm từ phải sang trái
+  if (isNumeric(value)) {
+    int dotDigits = calcDecimalDigits(divisorValue); // số chữ số thập phân cần hiển thị
+    if (dotDigits > 0) {
+      // Với vẽ ngược (i=0 là ký tự bên phải nhất), dấu "." nằm sau dotDigits ký tự từ phải sang
+      // Nghĩa là vẽ dấu "." khi i == dotDigits - 1
+      dotPosition = dotDigits - 1;
+    }
   }
 
   for (int i = 0; i < valueLength; i++) {
@@ -241,8 +266,10 @@ void showSetup(const char* setUpCode, const char* value, const char* text) {
     int x = startX - (i * 10);
     u8g2.drawStr(x, 18, temp); // Vẽ ký tự lùi về bên trái
 
-    if (dotPosition == i && i != valueLength - 1) {
-      u8g2.drawStr(x - 4, 18, "."); // Vẽ dấu "." phân cách thập phân
+    // Vẽ dấu "." phân cách thập phân đúng vị trí khi i đạt dotPosition
+    if (dotPosition >= 0 && i == dotPosition) {
+      // Vẽ dấu "." nằm giữa ký tự hiện tại và ký tự kế tiếp bên trái
+      u8g2.drawStr(x - 3, 18, "."); // Vẽ dấu "." phân cách thập phân
     }
   }
 
@@ -256,7 +283,7 @@ void showEdit(int columnIndex) {
   u8g2.clearBuffer(); // Xóa bộ nhớ đệm của màn hình để vẽ mới
   u8g2.setFont(u8g2_font_crox3hb_tf); // Thiết lập font chữ đậm
 
-  char tempSetUpCode[64]; // Tạo chuỗi tạm chứa mã cài đặt và dấu ";"
+  char tempSetUpCode[64]; // Tạo chuỗi tạm chứa mã cài đặt và dấu ":"
   snprintf(tempSetUpCode, sizeof(tempSetUpCode), "%s:", setupCodeStr.c_str()); // Nối mã cài đặt với dấu ":"
   u8g2.drawStr(0, 18, tempSetUpCode); // Hiển thị mã cài đặt
 
@@ -275,9 +302,13 @@ void showEdit(int columnIndex) {
 
   int startX = 128 - 10; // Bắt đầu từ vị trí rìa phải
 
+  // Tính vị trí dấu chấm tương tự showSetup
   int dotPosition = -1;
-  if (divisorValue >= 10) {
-    dotPosition = log10(divisorValue); // Vị trí dấu chấm từ phải sang trái
+  if (isNumeric(valueChr)) {
+    int dotDigits = calcDecimalDigits(divisorValue);
+    if (dotDigits > 0) {
+      dotPosition = dotDigits - 1;
+    }
   }
 
   for (int i = 0; i < maxLength; i++) {
@@ -299,9 +330,20 @@ void showEdit(int columnIndex) {
       u8g2.drawStr(x, 18, temp); // Vẽ ký tự
     }
 
-    // Vẽ dấu "." nếu cần
-    if (dotPosition == i && i != valueLength - 1) {
-      u8g2.drawStr(x - 4, 18, "."); // Vẽ dấu "." phân cách thập phân
+    // Vẽ dấu "." nếu cần, và cũng tô nền nếu columnIndex trùng vị trí dấu "."
+    if (dotPosition >= 0 && i == dotPosition) {
+      int dotX = x - 3; // Vị trí vẽ dấu "." giữa hai ký tự
+
+      if (i == columnIndex) {
+        // Tô nền cho dấu "." như yêu cầu
+        u8g2.setDrawColor(1);
+        u8g2.drawBox(dotX + 1, 15, 2, 5); // tô nền cho dấu chấm
+        u8g2.setDrawColor(0);
+        u8g2.drawStr(dotX, 18, ".");
+        u8g2.setDrawColor(1);
+      } else {
+        u8g2.drawStr(dotX, 18, "."); // Vẽ dấu "." phân cách thập phân
+      }
     }
   }
 
@@ -310,7 +352,6 @@ void showEdit(int columnIndex) {
   wrapText(textStr.c_str(), 0, 42, 18, 128); // Hiển thị nội dung văn bản xuống dòng nếu dài quá
   u8g2.sendBuffer(); // Gửi nội dung đệm ra màn hình
 }
-
 
 
 // Hàm tải cấu hình từ JSON
