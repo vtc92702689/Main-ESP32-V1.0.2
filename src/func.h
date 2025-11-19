@@ -61,7 +61,10 @@ void readConfigFile();
 
 void reSet();
 // Hàm đặt lại giá trị cấu hình về mặc định và ghi lại tệp JSON với các giá trị này
-void xuatXungPWM(unsigned long thoiGianDao,int PinPWM);
+void xuatXungPWMold(unsigned long thoiGianDao,int pinPWM);
+void xuatXungPWM(unsigned long thoiGianDaoMicros,int pinPWM);
+void xuatXungPWM_us(uint32_t duration_us, int pinPWM);  // func xuất tần số nhanh
+bool docPWM_waitToggle(int pin, uint32_t timeout_us);    //func đọc tần số nhanh để phản hồi
 
 // Khai báo các biến toàn cục
 extern int btnSetDebounceMill; // Thời gian chống nhiễu cho nút bấm, tránh ghi nhận nhiều lần nhấn do nhiễu
@@ -75,7 +78,7 @@ extern int maxLength; // Độ dài tối đa của chuỗi giá trị, dùng đ
 extern int columnIndex; // Chỉ số cột hiện tại để chỉnh sửa giá trị, thường dùng khi nhập liệu số
 extern int currentValue; // Giá trị hiện tại của mục cài đặt, lưu trữ giá trị đang được chỉnh sửa
 extern int divisorValue; //hệ số chia
-extern int soXungDaChay;
+extern volatile uint64_t soXungDaChay;
 extern int pinPWM;
 
 extern byte trangThaiHoatDong; // Trạng thái hoạt động của chương trình, dùng để điều hướng giữa các trạng thái khác nhau
@@ -107,5 +110,6 @@ extern String ListExp[10]; // Mảng chứa các phần chức năng giải thí
 
 extern U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2; // Khai báo extern cho u8g2, đối tượng điều khiển màn hình OLED
 extern StaticJsonDocument<200> jsonDoc; // Khai báo extern cho jsonDoc, tài liệu JSON chứa cấu hình của chương trình
+extern portMUX_TYPE mux;
 
 #endif

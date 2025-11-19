@@ -1,4 +1,7 @@
 #include "func.h"
+#include "esp_timer.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/portmacro.h"
 
 // Định nghĩa các biến toàn cục
 int btnSetDebounceMill = 20; // Thời gian chống nhiễu cho nút bấm, tránh ghi nhận nhiều lần nhấn do nhiễu
@@ -11,7 +14,7 @@ int minValue = 0;            // Giá trị nhỏ nhất có thể, dùng trong c
 int maxLength = 0;           // Độ dài tối đa của chuỗi giá trị, dùng để giới hạn đầu vào
 int columnIndex = 0;         // Chỉ số cột hiện tại để chỉnh sửa giá trị, thường dùng khi nhập liệu số
 int currentValue;            // Giá trị hiện tại của mục cài đặt, lưu trữ giá trị đang được chỉnh sửa
-int soXungDaChay = 0;
+volatile uint64_t soXungDaChay = 0;
 int divisorValue = 0; // Biến lưu hệ số chia để hiển thị thập phân
 
 byte trangThaiHoatDong = 0;  // Trạng thái hoạt động của chương trình, dùng để điều hướng giữa các trạng thái khác nhau
@@ -41,7 +44,7 @@ String textStr;                 // Chuỗi mô tả, chứa thông tin văn bả
 String keyStr;                  // Chuỗi khóa, dùng để lưu trữ khóa của mục cài đặt trong tài liệu JSON
 String ListExp[10];             // Mảng chứa các phần chức năng giải thích thông số, chứa các mục giải thích cho mục cài đặt
 
-
+portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
 // Hàm kiểm tra một chuỗi có phải là số hay không
 bool isNumeric(const char* str) {
@@ -223,7 +226,6 @@ int calcDecimalDigits(int divisor) {
   return len;
 }
 
-
 // Hàm hiển thị cài đặt
 void showSetup(const char* setUpCode, const char* value, const char* text) {
   u8g2.clearBuffer(); // Xóa bộ nhớ đệm của màn hình để vẽ mới
@@ -252,8 +254,11 @@ void showSetup(const char* setUpCode, const char* value, const char* text) {
 
   // Tính vị trí dấu chấm: vẽ từ phải sang trái, nên cần số chữ số thập phân rồi quy đổi sang chỉ số i
   int dotPosition = -1;
-  if (isNumeric(value)) {
-    int dotDigits = calcDecimalDigits(divisorValue); // số chữ số thập phân cần hiển thị
+  int dotDigits = 0;
+  bool hasDivisor = (divisorValue > 0);
+
+  if (isNumeric(value) && hasDivisor) {
+    dotDigits = calcDecimalDigits(divisorValue); // số chữ số thập phân cần hiển thị
     if (dotDigits > 0) {
       // Với vẽ ngược (i=0 là ký tự bên phải nhất), dấu "." nằm sau dotDigits ký tự từ phải sang
       // Nghĩa là vẽ dấu "." khi i == dotDigits - 1
@@ -261,8 +266,31 @@ void showSetup(const char* setUpCode, const char* value, const char* text) {
     }
   }
 
-  for (int i = 0; i < valueLength; i++) {
-    char temp[2] = {value[valueLength - 1 - i], '\0'}; // Lấy ký tự theo thứ tự ngược lại
+  // Xác định số ký tự thực tế sẽ hiển thị (bao gồm chữ số 0 bên trái nếu cần)
+  int displayLength = valueLength;
+  if (dotDigits > 0) {
+    int minLen = dotDigits + 1; // đảm bảo có ít nhất một chữ số nguyên bên trái dấu thập phân
+    if (displayLength < minLen) displayLength = minLen;
+  }
+
+  // không vượt quá maxLength
+  if (displayLength > maxLength) displayLength = maxLength;
+
+  for (int i = 0; i < displayLength; i++) {
+    char ch = ' '; // mặc định khoảng trống
+    if (i < valueLength) {
+      char tmp = value[valueLength - 1 - i];
+      ch = tmp;
+    } else {
+      if (isNumeric(value) && dotDigits > 0) {
+        // padding '0' khi cần hiển thị chữ số nguyên 0 trước phần thập phân
+        ch = '0';
+      } else {
+        ch = ' ';
+      }
+    }
+
+    char temp[2] = { ch, '\0' }; // Lấy ký tự theo thứ tự ngược lại
     int x = startX - (i * 10);
     u8g2.drawStr(x, 18, temp); // Vẽ ký tự lùi về bên trái
 
@@ -304,19 +332,44 @@ void showEdit(int columnIndex) {
 
   // Tính vị trí dấu chấm tương tự showSetup
   int dotPosition = -1;
-  if (isNumeric(valueChr)) {
-    int dotDigits = calcDecimalDigits(divisorValue);
+  int dotDigits = 0;
+  bool hasDivisor = (divisorValue > 0);
+
+  if (isNumeric(valueChr) && hasDivisor) {
+    dotDigits = calcDecimalDigits(divisorValue);
     if (dotDigits > 0) {
       dotPosition = dotDigits - 1;
     }
   }
 
-  for (int i = 0; i < maxLength; i++) {
-    char temp[2] = {' ', '\0'}; // Khởi tạo chuỗi tạm với giá trị mặc định
+  // Xác định số ký tự thực tế sẽ hiển thị (bao gồm chữ số 0 bên trái nếu cần)
+  int displayLength = valueLength;
+  if (dotDigits > 0) {
+    int minLen = dotDigits + 1; // đảm bảo có ít nhất một chữ số nguyên bên trái dấu thập phân
+    if (displayLength < minLen) displayLength = minLen;
+  }
 
-    if (i < valueLength) {
-      temp[0] = valueChr[valueLength - 1 - i]; // Lấy ký tự theo thứ tự ngược lại
+  // không vượt quá maxLength
+  if (displayLength > maxLength) displayLength = maxLength;
+
+  for (int i = 0; i < maxLength; i++) {
+    char tempCh = ' '; // Khởi tạo chuỗi tạm với giá trị mặc định
+
+    if (i < displayLength) {
+      if (i < valueLength) {
+        tempCh = valueChr[valueLength - 1 - i]; // Lấy ký tự theo thứ tự ngược lại
+      } else {
+        if (isNumeric(valueChr) && dotDigits > 0) {
+          tempCh = '0'; // padding '0' khi cần
+        } else {
+          tempCh = ' ';
+        }
+      }
+    } else {
+      tempCh = ' ';
     }
+
+    char temp[2] = {tempCh, '\0'};
 
     int x = startX - (i * 10); // Tính vị trí vẽ ký tự
 
@@ -339,7 +392,7 @@ void showEdit(int columnIndex) {
         u8g2.setDrawColor(1);
         u8g2.drawBox(dotX + 1, 15, 2, 5); // tô nền cho dấu chấm
         u8g2.setDrawColor(0);
-        u8g2.drawStr(dotX, 18, ".");
+        u8g2.drawStr(dotX, 18, "."); 
         u8g2.setDrawColor(1);
       } else {
         u8g2.drawStr(dotX, 18, "."); // Vẽ dấu "." phân cách thập phân
@@ -474,7 +527,7 @@ void resetWait() {
   void* callerID = __builtin_return_address(0);
   timers.erase(callerID);
 }
-void xuatXungPWM(unsigned long thoiGianDao,int PinPWM) {
+void xuatXungPWMold(unsigned long thoiGianDao,int pinPWM) {
   static bool trangThaiPWM = false;
   static unsigned long thoiDiemCuoiPWM = 0;
   if (WaitMicros(thoiDiemCuoiPWM, thoiGianDao)) {
@@ -487,3 +540,124 @@ void xuatXungPWM(unsigned long thoiGianDao,int PinPWM) {
     }
   }
 }
+
+void xuatXungPWM(unsigned long thoiGianDaoMicros, int pinPWM) {
+  static bool trangThaiPWM = false;
+  static unsigned long thoiDiemCuoiPWM = 0;
+
+  unsigned long now = micros();
+  if (WaitMicros(thoiDiemCuoiPWM, thoiGianDaoMicros)) {
+    thoiDiemCuoiPWM = now;
+    trangThaiPWM = !trangThaiPWM;
+    digitalWrite(pinPWM, trangThaiPWM ? HIGH : LOW);
+
+    if (trangThaiPWM) {
+      // Gọi đúng: truyền &mux
+      portENTER_CRITICAL(&mux);
+      soXungDaChay++;
+      portEXIT_CRITICAL(&mux);
+    }
+  }
+}
+
+// Hàm đọc số chu kỳ CPU hiện tại (dùng để đo thời gian chính xác đến từng chu kỳ)
+static inline uint32_t read_ccount() {
+  uint32_t c;
+  asm volatile ("rsr.ccount %0" : "=a" (c));  // Lệnh assembly đọc thanh ghi ccount
+  return c;                                   // Trả về số chu kỳ CPU hiện tại
+}
+
+
+// Hàm xuất 1 xung PWM với mỗi pha HIGH và LOW kéo dài half_cycles chu kỳ CPU
+void xuatXungPWM_cycles(uint32_t half_cycles, int pin) {
+  if (half_cycles == 0) return;               // Nếu thời gian bằng 0 thì không làm gì
+
+  uint32_t mask = (1UL << pin);              // Tạo mặt nạ bit để thao tác trực tiếp với chân GPIO
+
+  GPIO.out_w1ts = mask;                      // Đặt chân GPIO lên mức HIGH
+  uint32_t start = read_ccount();            // Ghi lại thời điểm bắt đầu pha HIGH
+  while ((read_ccount() - start) < half_cycles) {
+    asm volatile("nop");                     // Chờ đến khi đủ half_cycles
+  }
+
+  GPIO.out_w1tc = mask;                      // Đặt chân GPIO xuống mức LOW
+  start = read_ccount();                     // Ghi lại thời điểm bắt đầu pha LOW
+  while ((read_ccount() - start) < half_cycles) {
+    asm volatile("nop");                     // Chờ đến khi đủ half_cycles
+  }
+
+  soXungDaChay++;                             // Tăng biến đếm số xung đã phát
+}
+
+
+// Hàm xuất 1 xung PWM với tổng thời gian duration_us (micro giây)
+void xuatXungPWM_us(uint32_t duration_us, int pinPWM) {
+  if (duration_us == 0) return;              // Nếu thời gian bằng 0 thì không làm gì
+
+  uint32_t cpu_freq_mhz = getCpuFrequencyMhz();               // Lấy tần số CPU hiện tại (ví dụ: 240 MHz)
+  uint32_t half_cycles = (duration_us * cpu_freq_mhz) / 2;    // Tính số chu kỳ cho mỗi pha HIGH/LOW
+
+  xuatXungPWM_cycles(half_cycles, pinPWM);                       // Gọi hàm xuất xung theo chu kỳ đã tính
+}
+
+// Đọc mức logic chân nhanh bằng thanh ghi GPIO.in
+static inline int gpio_level_fast(int pin) {
+  return (GPIO.in >> pin) & 1;
+}
+
+
+// Đợi chân pin toggle (thay đổi mức so với trạng thái ban đầu).
+// Trả về true nếu thấy thay đổi trong khoảng timeout_us (micro giây).
+// Trả về false nếu timeout.
+// Lưu ý: timeout_us = 0 => kiểm tra ngay, nếu đã toggle trước đó sẽ trả về false (không đợi).
+bool docPWM_waitToggle(int pin, uint32_t timeout_us) {
+  const uint32_t cpu_mhz = getCpuFrequencyMhz();                  // MHz
+  const uint32_t timeout_cycles = timeout_us * cpu_mhz;          // cycles (timeout_us * MHz)
+  uint32_t start = read_ccount();
+
+  int initial = gpio_level_fast(pin);                            // trạng thái ban đầu
+
+  // Nếu timeout_us == 0 thì chỉ kiểm tra ngay và trả về theo kết quả
+  if (timeout_us == 0) {
+    return (gpio_level_fast(pin) != initial);
+  }
+
+  // Vòng busy-wait: chờ khi level thay đổi so với initial
+  while (true) {
+    if (gpio_level_fast(pin) != initial) {
+      return true; // có thay đổi
+    }
+    // kiểm tra timeout
+    if ((read_ccount() - start) > timeout_cycles) {
+      return false; // timeout
+    }
+    asm volatile("nop"); // giữ vòng ngắn gọn, optional
+  }
+}
+
+
+/*static inline uint32_t read_ccount() {
+  uint32_t c;
+  asm volatile ("rsr.ccount %0" : "=a" (c));
+  return c;
+}
+void xuatXungPWM_cycles(uint32_t half_cycles, uint8_t pin) {
+  if (half_cycles == 0) return;
+  uint32_t mask = (1UL << pin);
+  // set high (direct register = rất nhanh)
+  GPIO.out_w1ts = mask;
+  uint32_t start = read_ccount();
+  while ((read_ccount() - start) < half_cycles) { asm volatile("nop"); }
+  // set low
+  GPIO.out_w1tc = mask;
+  start = read_ccount();
+  while ((read_ccount() - start) < half_cycles) { asm volatile("nop"); }
+  soXungDaChay++;
+}
+void xuatXungPWM_ms(uint32_t duration_ms, int pinPWM) {
+  if (duration_ms == 0) return;
+  uint32_t cpu_freq_mhz = getCpuFrequencyMhz(); // ví dụ: 240
+  uint32_t half_cycles = (duration_ms * cpu_freq_mhz * 1000) / 2;
+  xuatXungPWM_cycles(half_cycles, pin);
+}*/
+

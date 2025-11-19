@@ -31,6 +31,7 @@ void btnMenuClick() {
   //Serial.println("Button Clicked (nhấn nhả)");
   if (displayScreen == "ScreenCD") {
     if (keyStr == "CD" && isChanged) {
+      isChanged = false;
       writeFile(jsonDoc,"/config.json");
     }
     showList(menuIndex);  // Hiển thị danh sách menu hiện tại
@@ -282,6 +283,8 @@ const int Out6 = 19;
 const int Out7 = 27;
 const int Out8 = 14;
 
+int pinPWM = 27; // Chọn chân xuất xung
+float freq_kHz = 0;  
 
 //KHAI BÁO THÔNG SỐ TRƯƠNG TRÌNH
 
@@ -625,11 +628,41 @@ void loop() {
     btnUp.tick();
     btnDown.tick();
     break;
-  case 1:
-    btnMenu.tick();
-    btnDown.tick();
-    
-    
+  case 1: {
+  const uint32_t durationTest_ms = 1000;  // Thời gian test: 1000 ms = 1 giây
+  const uint32_t xung_us = 1;             // Thời gian mỗi xung: 2 µs (1 µs HIGH + 1 µs LOW)
+
+  soXungDaChay = 0;                       // Reset bộ đếm
+  uint32_t start = millis();             // Ghi lại thời điểm bắt đầu
+
+  // Vòng lặp test: xuất xung liên tục trong 1 giây
+  while (millis() - start < durationTest_ms) {
+    xuatXungPWM_us(xung_us, pinPWM);     // Gọi hàm xuất xung theo đơn vị µs
+  }
+
+  // Tính tần số thực tế đạt được (số xung / giây)
+  float freq_Hz = (float)soXungDaChay / (durationTest_ms / 1000.0); // Hz
+  freq_kHz = freq_Hz / 1000.0;                                      // kHz
+
+  // Hiển thị thông tin lên màn hình OLED
+  char buf[48];
+  u8g2.clearBuffer();
+
+  u8g2.drawStr(0, 12, "PWM xung test (us)");
+
+  snprintf(buf, sizeof(buf), "Pin: %d", pinPWM);
+  u8g2.drawStr(0, 26, buf);
+
+  snprintf(buf, sizeof(buf), "Xung: %lu", soXungDaChay);
+  u8g2.drawStr(0, 40, buf);
+
+  snprintf(buf, sizeof(buf), "Freq: %.2f kHz", freq_kHz);
+  u8g2.drawStr(0, 54, buf);
+
+  u8g2.sendBuffer();
+
+  delay(1000); // Chờ 1 giây trước khi test lại
+}  
     break;
   case 2:
     mainRun();
