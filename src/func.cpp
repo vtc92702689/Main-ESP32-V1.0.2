@@ -635,6 +635,49 @@ bool docPWM_waitToggle(int pin, uint32_t timeout_us) {
   }
 }
 
+// Đo chu kỳ (HIGH+LOW) bằng cách bắt 3 cạnh: rising, falling, next rising
+// Trả về period tính bằng micro giây; trả 0 nếu timeout (ms_timeout tính bằng ms)
+uint32_t docPWM_us_fast(int pin, uint32_t ms_timeout = 1000) {
+  const uint32_t cpu_mhz = getCpuFrequencyMhz();
+  const uint32_t timeout_cycles = ms_timeout * 1000UL * cpu_mhz; // ms -> µs -> cycles
+  uint32_t start_cycle = read_ccount();
+  uint32_t now;
+
+  // 1) chờ mức LOW (nếu đang HIGH) để sync trước khi bắt rising
+  now = read_ccount();
+  while (gpio_level_fast(pin) == 1) {
+    if ((read_ccount() - start_cycle) > timeout_cycles) return 0;
+  }
+
+  // 2) chờ rising edge (LOW -> HIGH)
+  start_cycle = read_ccount();
+  while (gpio_level_fast(pin) == 0) {
+    if ((read_ccount() - start_cycle) > timeout_cycles) return 0;
+  }
+  uint32_t t_rising = read_ccount(); // thời điểm rising
+
+  // 3) chờ falling edge (HIGH -> LOW)
+  while (gpio_level_fast(pin) == 1) {
+    if ((read_ccount() - t_rising) > timeout_cycles) return 0;
+  }
+  uint32_t t_falling = read_ccount(); // thời điểm falling
+
+  // 4) chờ next rising edge (LOW -> HIGH)
+  while (gpio_level_fast(pin) == 0) {
+    if ((read_ccount() - t_falling) > timeout_cycles) return 0;
+  }
+  uint32_t t_next_rising = read_ccount();
+
+  // Tính chu kỳ bằng cycles
+  uint32_t high_cycles = t_falling - t_rising;
+  uint32_t low_cycles  = t_next_rising - t_falling;
+  uint32_t total_cycles = high_cycles + low_cycles;
+
+  // Chuyển sang micro giây: cycles / cpu_mhz
+  uint32_t period_us = total_cycles / cpu_mhz;
+  return period_us;
+}
+
 
 /*static inline uint32_t read_ccount() {
   uint32_t c;
